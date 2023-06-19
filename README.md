@@ -10,3 +10,4 @@
 ## TODOs
 - multithreaded slotted page/segments
 - refactor page size usages
+- optimize (btree, latches)

@@ -5,7 +5,6 @@ set(
     include/simpledb/buffer_manager.h
     include/simpledb/config.h
     include/simpledb/database.h
-    include/simpledb/defer.h
     include/simpledb/file.h
     include/simpledb/hex_dump.h
     include/simpledb/schema.h

@@ -1,5 +1,4 @@
 #include "simpledb/btree.h"
-#include "simpledb/defer.h"
 #include <algorithm>
 #include <barrier>
 #include <cstddef>
@@ -12,7 +11,6 @@
 
 using BufferFrame = simpledb::BufferFrame;
 using BufferManager = simpledb::BufferManager;
-using Defer = simpledb::Defer;
 using BTree = simpledb::BTree<uint64_t, uint64_t, std::less<>>;
 
 namespace {
@@ -175,12 +173,13 @@ TEST(BTreeTest, InsertEmptyTree) {
    auto test = "inserting an element into an empty B-Tree";
    auto& root_page = buffer_manager.fix_page(tree.root, false);
    auto root_node = reinterpret_cast<BTree::Node*>(root_page.get_data());
-   Defer root_page_unfix([&]() { buffer_manager.unfix_page(root_page, false); });
 
    ASSERT_TRUE(root_node->is_leaf())
       << test << " does not create a leaf node.";
    ASSERT_TRUE(root_node->count)
       << test << " does not create a leaf node with count = 1.";
+
+   buffer_manager.unfix_page(root_page, false);
 }
 
 // NOLINTNEXTLINE
@@ -198,12 +197,13 @@ TEST(BTreeTest, InsertLeafNode) {
    auto& root_page = buffer_manager.fix_page(tree.root, false);
    auto root_node = reinterpret_cast<BTree::Node*>(root_page.get_data());
    auto root_inner_node = static_cast<BTree::InnerNode*>(root_node);
-   Defer root_page_unfix([&]() { buffer_manager.unfix_page(root_page, false); });
 
    ASSERT_TRUE(root_node->is_leaf())
       << test << " creates an inner node as root.";
    ASSERT_EQ(root_inner_node->count, BTree::LeafNode::kCapacity)
       << test << " does not store all elements.";
+
+   buffer_manager.unfix_page(root_page, false);
 }
 
 // NOLINTNEXTLINE
@@ -218,10 +218,9 @@ TEST(BTreeTest, InsertLeafNodeSplit) {
    auto* root_page = &buffer_manager.fix_page(tree.root, false);
    auto root_node = reinterpret_cast<BTree::Node*>(root_page->get_data());
    auto root_inner_node = static_cast<BTree::InnerNode*>(root_node);
-   Defer root_page_unfix([&]() { buffer_manager.unfix_page(*root_page, false); });
    ASSERT_TRUE(root_inner_node->is_leaf());
    ASSERT_EQ(root_inner_node->count, BTree::LeafNode::kCapacity);
-   root_page_unfix.run();
+   buffer_manager.unfix_page(*root_page, false);
 
    // Let there be a split...
    tree.insert(424242, 42);
@@ -231,12 +230,13 @@ TEST(BTreeTest, InsertLeafNodeSplit) {
    root_page = &buffer_manager.fix_page(tree.root, false);
    root_node = reinterpret_cast<BTree::Node*>(root_page->get_data());
    root_inner_node = static_cast<BTree::InnerNode*>(root_node);
-   root_page_unfix = Defer([&]() { buffer_manager.unfix_page(*root_page, false); });
 
    ASSERT_FALSE(root_inner_node->is_leaf())
       << test << " does not create a root inner node";
    ASSERT_EQ(root_inner_node->count, 2)
       << test << " creates a new root with count != 2";
+
+   buffer_manager.unfix_page(*root_page, false);
 }
 
 // NOLINTNEXTLINE
@@ -445,26 +445,14 @@ TEST(BTreeTest, MultithreadWriters) {
          size_t limit = startValue + 2 * BTree::LeafNode::kCapacity;
          // Insert values
          for (auto i = startValue; i < limit; ++i) {
-            std::stringstream ss;
-            ss << thread << ": insert " << i << std::endl;
-            std::cout << ss.str();
             tree.insert(i, 2 * i);
-            std::stringstream ss2;
-            ss2 << thread << ": inserted " << i << std::endl;
-            std::cout << ss2.str();
          }
 
          sync_point.arrive_and_wait();
 
          // And read them back
          for (auto i = startValue; i < limit; ++i) {
-            std::stringstream ss;
-            ss << thread << ": lookup " << i << std::endl;
-            std::cout << ss.str();
             auto res = tree.lookup(i);
-            std::stringstream ss2;
-            ss2 << thread << ": looked up " << i << std::endl;
-            std::cout << ss2.str();
             ASSERT_TRUE(res);
             ASSERT_TRUE(*res == 2 * i);
          }
