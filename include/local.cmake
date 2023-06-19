@@ -1,0 +1,14 @@
+set(
+    INCLUDE_H
+    include/simpledb/binary_search.h
+    include/simpledb/btree.h
+    include/simpledb/buffer_manager.h
+    include/simpledb/config.h
+    include/simpledb/database.h
+    include/simpledb/defer.h
+    include/simpledb/file.h
+    include/simpledb/hex_dump.h
+    include/simpledb/schema.h
+    include/simpledb/segment.h
+    include/simpledb/slotted_page.h
+)
