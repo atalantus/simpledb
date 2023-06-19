@@ -89,7 +89,6 @@ jobs:
           make lint
 
   benchmark:
-    needs: [tester, multithread_tester, advanced_tester]
     runs-on: ubuntu-latest
 
     steps:
