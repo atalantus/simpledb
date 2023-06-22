@@ -3,11 +3,11 @@
 # ---------------------------------------------------------------------------
 
 set(TEST_CC
-    test/buffer_manager_test.cc
-    test/slotted_page_test.cc
-    test/segment_test.cc
-    test/btree_test.cc
-)
+        test/buffer_manager_test.cc
+        test/slotted_page_test.cc
+        test/segment_test.cc
+        test/btree_test.cc
+        )
 
 # ---------------------------------------------------------------------------
 # Tester

@@ -3,11 +3,11 @@
 #include <atomic>
 #include <condition_variable>
 #include <cstring>
-#include <gtest/gtest.h>
 #include <mutex>
 #include <random>
 #include <thread>
 #include <vector>
+#include <gtest/gtest.h>
 
 namespace {
 
@@ -33,7 +33,6 @@ TEST(BufferManagerTest, FixSingle) {
       ASSERT_EQ(expected_values, values);
    }
 }
-
 
 // NOLINTNEXTLINE
 TEST(BufferManagerTest, PersistentRestart) {
@@ -62,7 +61,6 @@ TEST(BufferManagerTest, PersistentRestart) {
    }
 }
 
-
 // NOLINTNEXTLINE
 TEST(BufferManagerTest, FIFOEvict) {
    simpledb::BufferManager buffer_manager{1024, 10};
@@ -86,7 +84,6 @@ TEST(BufferManagerTest, FIFOEvict) {
    }
 }
 
-
 // NOLINTNEXTLINE
 TEST(BufferManagerTest, BufferFull) {
    simpledb::BufferManager buffer_manager{1024, 10};
@@ -103,7 +100,6 @@ TEST(BufferManagerTest, BufferFull) {
    }
 }
 
-
 // NOLINTNEXTLINE
 TEST(BufferManagerTest, MoveToLRU) {
    simpledb::BufferManager buffer_manager{1024, 10};
@@ -118,7 +114,6 @@ TEST(BufferManagerTest, MoveToLRU) {
    EXPECT_EQ(std::vector<uint64_t>{1}, buffer_manager.get_fifo_list());
    EXPECT_EQ(std::vector<uint64_t>{2}, buffer_manager.get_lru_list());
 }
-
 
 // NOLINTNEXTLINE
 TEST(BufferManagerTest, LRURefresh) {
@@ -139,7 +134,6 @@ TEST(BufferManagerTest, LRURefresh) {
    EXPECT_EQ((std::vector<uint64_t>{2, 1}), buffer_manager.get_lru_list());
 }
 
-
 // NOLINTNEXTLINE
 TEST(BufferManagerTest, MultithreadParallelFix) {
    simpledb::BufferManager buffer_manager{1024, 10};
@@ -151,8 +145,7 @@ TEST(BufferManagerTest, MultithreadParallelFix) {
             auto& page1 = buffer_manager.fix_page(i, false);
             auto& page2 = buffer_manager.fix_page(i + 4, false);
             buffer_manager.unfix_page(page1, false);
-            buffer_manager.unfix_page(page2, false);
-         );
+            buffer_manager.unfix_page(page2, false););
       });
    }
    for (auto& thread : threads) {
@@ -164,7 +157,6 @@ TEST(BufferManagerTest, MultithreadParallelFix) {
    EXPECT_EQ(expected_fifo, fifo_list);
    EXPECT_TRUE(buffer_manager.get_lru_list().empty());
 }
-
 
 // NOLINTNEXTLINE
 TEST(BufferManagerTest, MultithreadExclusiveAccess) {
@@ -202,7 +194,7 @@ TEST(BufferManagerTest, MultithreadExclusiveAccess) {
 // NOLINTNEXTLINE
 TEST(BufferManagerTest, BlockedThreadsHoldsNoLocks) {
    simpledb::BufferManager buffer_manager{1024, 10};
-   for (size_t i = 0; i < 2; ++i ){
+   for (size_t i = 0; i < 2; ++i) {
       auto& page = buffer_manager.fix_page(i, true);
       ASSERT_TRUE(page.get_data());
       std::memset(page.get_data(), 0, 1024);
@@ -298,7 +290,6 @@ TEST(BufferManagerTest, MultithreadBufferFull) {
    EXPECT_EQ(6, num_buffer_full.load());
 }
 
-
 // NOLINTNEXTLINE
 TEST(BufferManagerTest, MultithreadManyPages) {
    simpledb::BufferManager buffer_manager{1024, 10};
@@ -310,8 +301,7 @@ TEST(BufferManagerTest, MultithreadManyPages) {
          for (size_t j = 0; j < 10000; ++j) {
             ASSERT_NO_THROW(
                auto& page = buffer_manager.fix_page(distr(engine), false);
-               buffer_manager.unfix_page(page, false);
-            );
+               buffer_manager.unfix_page(page, false););
          }
       });
    }
@@ -319,7 +309,6 @@ TEST(BufferManagerTest, MultithreadManyPages) {
       thread.join();
    }
 }
-
 
 // NOLINTNEXTLINE
 TEST(BufferManagerTest, MultithreadReaderWriter) {
@@ -454,4 +443,4 @@ TEST(BufferManagerTest, MultithreadReaderWriter) {
    EXPECT_LT(aborts.load(), 20);
 }
 
-}  // namespace
+}
