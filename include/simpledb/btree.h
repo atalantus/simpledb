@@ -2,7 +2,6 @@
 
 #include "simpledb/binary_search.h"
 #include "simpledb/buffer_manager.h"
-#include "simpledb/config.h"
 #include "simpledb/segment.h"
 #include <atomic>
 #include <cassert>
@@ -11,7 +10,7 @@
 
 namespace simpledb {
 
-template <typename KeyT, typename ValueT, typename ComparatorT>
+template <typename KeyT, typename ValueT, typename ComparatorT, size_t PageSize>
 struct BTree : public Segment {
    struct Node {
       /// The level in the tree.
@@ -29,7 +28,7 @@ struct BTree : public Segment {
 
    struct InnerNode : public Node {
       /// The capacity of children of a node.
-      static constexpr uint32_t kCapacity = (PAGE_SIZE - sizeof(Node)) / (sizeof(KeyT) + sizeof(uint64_t));
+      static constexpr uint32_t kCapacity = (PageSize - sizeof(Node)) / (sizeof(KeyT) + sizeof(uint64_t));
 
       /// The keys.
       KeyT keys[kCapacity];
@@ -127,7 +126,7 @@ struct BTree : public Segment {
 
    struct LeafNode : public Node {
       /// The capacity of a node.
-      static constexpr uint32_t kCapacity = (PAGE_SIZE - sizeof(Node)) / (sizeof(KeyT) + sizeof(ValueT));
+      static constexpr uint32_t kCapacity = (PageSize - sizeof(Node)) / (sizeof(KeyT) + sizeof(ValueT));
 
       /// The keys.
       KeyT keys[kCapacity];

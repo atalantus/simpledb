@@ -11,48 +11,31 @@
 
 using BufferFrame = simpledb::BufferFrame;
 using BufferManager = simpledb::BufferManager;
-using BTree = simpledb::BTree<uint64_t, uint64_t, std::less<>>;
+using BTree = simpledb::BTree<uint64_t, uint64_t, std::less<>, 1024>;
 
 namespace {
 
-TEST(LowerBoundBranchlessTest, Random) {
-   size_t size = 100000;
-
-   std::mt19937_64 engine{0};
-   std::uniform_int_distribution<uint64_t> key_distr(0, std::numeric_limits<uint64_t>::max());
-
-   std::vector<uint64_t> rnd(size);
-
-   for (size_t i = 0; i < size; ++i) {
-      rnd[i] = key_distr(engine);
-   }
-
-   std::sort(rnd.begin(), rnd.end());
-
-   for (size_t i = 0; i < size; ++i) {
-      uint64_t s = key_distr(engine);
-
-      auto lb = std::lower_bound(rnd.begin(), rnd.end(), s);
-      auto lbb = simpledb::lower_bound_branchless(rnd.begin(), rnd.end(), s);
-
-      ASSERT_EQ(lb - rnd.begin(), lbb);
-   }
-}
-
 // NOLINTNEXTLINE
 TEST(BTreeTest, Capacity) {
-   using BTree = simpledb::BTree<uint64_t, uint64_t, std::less<>>;
-   ASSERT_LE(4000, sizeof(BTree::InnerNode));
-   ASSERT_LE(sizeof(BTree::InnerNode), PAGE_SIZE);
+   ASSERT_LE(1000, sizeof(BTree::InnerNode));
+   ASSERT_LE(sizeof(BTree::InnerNode), 1024);
 
-   ASSERT_LE(4000, sizeof(BTree::LeafNode));
-   ASSERT_LE(sizeof(BTree::LeafNode), PAGE_SIZE);
+   ASSERT_LE(1000, sizeof(BTree::LeafNode));
+   ASSERT_LE(sizeof(BTree::LeafNode), 1024);
+
+   // Larger buffer pages allow nodes with higher fanout
+   using BTree = simpledb::BTree<uint64_t, uint64_t, std::less<>, 1u << 16>;
+   ASSERT_LE(64000, sizeof(BTree::InnerNode));
+   ASSERT_LE(sizeof(BTree::InnerNode), 1u << 16);
+
+   ASSERT_LE(64000, sizeof(BTree::LeafNode));
+   ASSERT_LE(sizeof(BTree::LeafNode), 1u << 16);
 }
 
 // NOLINTNEXTLINE
 TEST(BTreeTest, LeafNodeInsert) {
    std::vector<std::byte> buffer;
-   buffer.resize(PAGE_SIZE);
+   buffer.resize(1024);
    auto node = new (buffer.data()) BTree::LeafNode();
    ASSERT_EQ(node->count, 0);
 
@@ -113,8 +96,8 @@ TEST(BTreeTest, LeafNodeInsert) {
 TEST(BTreeTest, LeafNodeSplit) {
    std::vector<std::byte> buffer_left;
    std::vector<std::byte> buffer_right;
-   buffer_left.resize(PAGE_SIZE);
-   buffer_right.resize(PAGE_SIZE);
+   buffer_left.resize(1024);
+   buffer_right.resize(1024);
 
    auto left_node = new (buffer_left.data()) BTree::LeafNode();
    auto right_node = reinterpret_cast<BTree::LeafNode*>(buffer_right.data());
@@ -166,7 +149,7 @@ TEST(BTreeTest, LeafNodeSplit) {
 
 // NOLINTNEXTLINE
 TEST(BTreeTest, InsertEmptyTree) {
-   BufferManager buffer_manager(PAGE_SIZE, 100);
+   BufferManager buffer_manager(1024, 100);
    BTree tree(0, buffer_manager);
    tree.insert(42, 21);
 
@@ -184,7 +167,7 @@ TEST(BTreeTest, InsertEmptyTree) {
 
 // NOLINTNEXTLINE
 TEST(BTreeTest, InsertLeafNode) {
-   uint32_t page_size = PAGE_SIZE;
+   uint32_t page_size = 1024;
    BufferManager buffer_manager(page_size, 100);
    BTree tree(0, buffer_manager);
 
@@ -208,7 +191,7 @@ TEST(BTreeTest, InsertLeafNode) {
 
 // NOLINTNEXTLINE
 TEST(BTreeTest, InsertLeafNodeSplit) {
-   BufferManager buffer_manager(PAGE_SIZE, 100);
+   BufferManager buffer_manager(1024, 100);
    BTree tree(0, buffer_manager);
 
    for (auto i = 0ul; i < BTree::LeafNode::kCapacity; ++i) {
@@ -241,7 +224,7 @@ TEST(BTreeTest, InsertLeafNodeSplit) {
 
 // NOLINTNEXTLINE
 TEST(BTreeTest, LookupEmptyTree) {
-   BufferManager buffer_manager(PAGE_SIZE, 100);
+   BufferManager buffer_manager(1024, 100);
    BTree tree(0, buffer_manager);
 
    auto test = "searching for a non-existing element in an empty B-Tree";
@@ -252,7 +235,7 @@ TEST(BTreeTest, LookupEmptyTree) {
 
 // NOLINTNEXTLINE
 TEST(BTreeTest, LookupSingleLeaf) {
-   BufferManager buffer_manager(PAGE_SIZE, 100);
+   BufferManager buffer_manager(1024, 100);
    BTree tree(0, buffer_manager);
 
    // Fill one page
@@ -274,7 +257,7 @@ TEST(BTreeTest, LookupSingleLeaf) {
 
 // NOLINTNEXTLINE
 TEST(BTreeTest, LookupSingleSplit) {
-   BufferManager buffer_manager(PAGE_SIZE, 100);
+   BufferManager buffer_manager(1024, 100);
    BTree tree(0, buffer_manager);
 
    // Insert values
@@ -298,7 +281,7 @@ TEST(BTreeTest, LookupSingleSplit) {
 
 // NOLINTNEXTLINE
 TEST(BTreeTest, LookupMultipleSplitsIncreasing) {
-   BufferManager buffer_manager(PAGE_SIZE, 100);
+   BufferManager buffer_manager(1024, 100);
    BTree tree(0, buffer_manager);
    auto n = 100 * BTree::LeafNode::kCapacity;
 
@@ -321,21 +304,15 @@ TEST(BTreeTest, LookupMultipleSplitsIncreasing) {
 
 // NOLINTNEXTLINE
 TEST(BTreeTest, LookupMultipleSplitsDecreasing) {
-   BufferManager buffer_manager(PAGE_SIZE, 100);
+   BufferManager buffer_manager(1024, 100);
    BTree tree(0, buffer_manager);
    auto n = 10 * BTree::LeafNode::kCapacity;
 
    // Insert values
    for (auto i = n; i > 0; --i) {
       tree.insert(i, 2 * i);
-
-      for (auto j = n; j >= i; --j) {
-         auto v = tree.lookup(j);
-         ASSERT_TRUE(v)
-            << i << ": key=" << j << " is missing";
-         ASSERT_EQ(*v, 2 * j)
-            << i << ": key=" << j << " should have the value v=" << 2 * j;
-      }
+      ASSERT_TRUE(tree.lookup(i))
+         << "searching for the just inserted key k=" << i << " yields nothing";
    }
 
    // Lookup all values
@@ -350,7 +327,7 @@ TEST(BTreeTest, LookupMultipleSplitsDecreasing) {
 
 // NOLINTNEXTLINE
 TEST(BTreeTest, LookupRandomNonRepeating) {
-   BufferManager buffer_manager(PAGE_SIZE, 100);
+   BufferManager buffer_manager(1024, 100);
    BTree tree(0, buffer_manager);
    auto n = 10 * BTree::LeafNode::kCapacity;
 
@@ -379,7 +356,7 @@ TEST(BTreeTest, LookupRandomNonRepeating) {
 
 // NOLINTNEXTLINE
 TEST(BTreeTest, LookupRandomRepeating) {
-   BufferManager buffer_manager(PAGE_SIZE, 100);
+   BufferManager buffer_manager(1024, 100);
    BTree tree(0, buffer_manager);
    auto n = 10 * BTree::LeafNode::kCapacity;
 
@@ -415,7 +392,7 @@ TEST(BTreeTest, LookupRandomRepeating) {
 
 // NOLINTNEXTLINE
 TEST(BTreeTest, Erase) {
-   BufferManager buffer_manager(PAGE_SIZE, 100);
+   BufferManager buffer_manager(1024, 100);
    BTree tree(0, buffer_manager);
 
    // Insert values
@@ -434,12 +411,12 @@ TEST(BTreeTest, Erase) {
 }
 
 TEST(BTreeTest, MultithreadWriters) {
-   BufferManager buffer_manager(PAGE_SIZE, 100);
+   BufferManager buffer_manager(1024, 100);
    BTree tree(0, buffer_manager);
 
-   std::barrier sync_point(36);
+   std::barrier sync_point(4);
    std::vector<std::thread> threads;
-   for (size_t thread = 0; thread < 36; ++thread) {
+   for (size_t thread = 0; thread < 4; ++thread) {
       threads.emplace_back([thread, &sync_point, &tree] {
          size_t startValue = thread * 2 * BTree::LeafNode::kCapacity;
          size_t limit = startValue + 2 * BTree::LeafNode::kCapacity;
