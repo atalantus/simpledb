@@ -6,12 +6,12 @@
 #include <vector>
 
 using BufferManager = simpledb::BufferManager;
-using BTree = simpledb::BTree<uint64_t, uint64_t, std::less<>>;
+using BTree = simpledb::BTree<uint64_t, uint64_t, std::less<>, 1024>;
 
 void Btree_Multi(benchmark::State& state) {
    const int NUM_THREADS = 4;
    for (auto _ : state) {
-      BufferManager buffer_manager(PAGE_SIZE, 100);
+      BufferManager buffer_manager(1024, 100);
       BTree tree(0, buffer_manager);
 
       std::barrier sync_point(NUM_THREADS);

@@ -12,7 +12,6 @@ char* BufferFrame::get_data() {
 }
 
 BufferManager::BufferManager(size_t page_size, size_t page_count) : pageSize{page_size}, pageCount{page_count} {
-   assert(page_size == PAGE_SIZE);
    segments = std::make_unique<std::array<std::pair<std::unique_ptr<File>, Latch>, 65536>>();
 
    fifoList.reserve(page_count);

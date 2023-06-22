@@ -27,7 +27,8 @@ FSISegment::FSISegment(uint16_t segment_id, BufferManager& buffer_manager, schem
          if (free_cache[upper] == invalidPid)
             free_cache[upper] = curPageIndex;
          curPageIndex++;
-         if (curPageIndex == table.allocated_pages) break;
+         if (curPageIndex == table.allocated_pages)
+            break;
 
          // check lower
          uint8_t lower = *reinterpret_cast<uint8_t*>(bf.get_data() + fsiOffset) & 0b00001111;
@@ -35,10 +36,13 @@ FSISegment::FSISegment(uint16_t segment_id, BufferManager& buffer_manager, schem
          if (free_cache[lower] == invalidPid)
             free_cache[lower] = curPageIndex;
          curPageIndex++;
-         if (curPageIndex == table.allocated_pages) break;
+         if (curPageIndex == table.allocated_pages)
+            break;
 
          fsiOffset++;
       }
+
+      buffer_manager.unfix_page(bf, false);
    }
 }
 

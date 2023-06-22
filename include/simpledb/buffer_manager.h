@@ -11,7 +11,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include "simpledb/config.h"
 #include "simpledb/file.h"
 
 namespace simpledb {
@@ -82,8 +81,7 @@ class BufferManager {
    BufferManager& operator=(BufferManager&&) = delete;
    /// Constructor.
    /// @param[in] page_size  Size in bytes that all pages will have.
-   /// @param[in] page_count Maximum number of pages that should reside in
-   //                        memory at the same time.
+   /// @param[in] page_count Maximum number of pages that should reside in memory at the same time.
    BufferManager(size_t page_size, size_t page_count);
 
    /// Destructor. Writes all dirty pages to disk.
@@ -144,8 +142,8 @@ class BufferManager {
    /// Is not thread-safe.
    [[nodiscard]] std::vector<uint64_t> get_lru_list() const;
 
-   // TODO: Remove and refactor
-   static uint32_t get_page_size() { return PAGE_SIZE; }
+   /// Returns the page size.
+   uint32_t get_page_size() const { return pageSize; }
 
    /// Returns the segment id for a given page id which is contained in the 16
    /// most significant bits of the page id.
