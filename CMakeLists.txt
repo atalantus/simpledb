@@ -42,16 +42,16 @@ include("${CMAKE_SOURCE_DIR}/vendor/rapidjson.cmake")
 
 include("${CMAKE_SOURCE_DIR}/include/local.cmake")
 include_directories(
-    ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include
 )
 
 include_directories(SYSTEM
-    ${LLVM_INCLUDE_DIRS}
-    ${GTEST_INCLUDE_DIR}
-    ${GFLAGS_INCLUDE_DIR}
-    ${RAPIDJSON_INCLUDE_DIR}
-    ${BENCHMARK_INCLUDE_DIR}
-)
+        ${LLVM_INCLUDE_DIRS}
+        ${GTEST_INCLUDE_DIR}
+        ${GFLAGS_INCLUDE_DIR}
+        ${RAPIDJSON_INCLUDE_DIR}
+        ${BENCHMARK_INCLUDE_DIR}
+        )
 
 # ---------------------------------------------------------------------------
 # Sources

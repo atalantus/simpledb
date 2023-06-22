@@ -44,7 +44,7 @@ Checks: >
   performance-*,
   clang-analyzer-cplusplus.NewDeleteLeaks,
 CheckOptions:
-- key: modernize-use-override.IgnoreDestructors
-  value: 'true'
-- key: modernize-use-override.AllowOverrideAndFinal
-  value: 'true'
+  - key: modernize-use-override.IgnoreDestructors
+    value: 'true'
+  - key: modernize-use-override.AllowOverrideAndFinal
+    value: 'true'

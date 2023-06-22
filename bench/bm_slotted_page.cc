@@ -1,12 +1,12 @@
 #include "benchmark/benchmark.h"
-#include "simpledb/slotted_page.h"
 #include "simpledb/buffer_manager.h"
 #include "simpledb/file.h"
 #include "simpledb/hex_dump.h"
 #include "simpledb/segment.h"
+#include "simpledb/slotted_page.h"
 #include <algorithm>
-#include <vector>
 #include <random>
+#include <vector>
 // ---------------------------------------------------------------------------------------------------
 
 using BufferManager = simpledb::BufferManager;
@@ -21,7 +21,7 @@ namespace schema = simpledb::schema;
 namespace {
 
 std::unique_ptr<schema::Schema> getTPCHSchemaLight() {
-   std::vector<schema::Table> tables {
+   std::vector<schema::Table> tables{
       schema::Table(
          "customer",
          {
@@ -34,12 +34,9 @@ std::unique_ptr<schema::Schema> getTPCHSchemaLight() {
             schema::Column("c_mktsegment", schema::Type::Char(10)),
             schema::Column("c_comment", schema::Type::Char(117)),
          },
-         {
-            "c_custkey"
-         },
+         {"c_custkey"},
          10, 11,
-         0
-         ),
+         0),
       schema::Table(
          "nation",
          {
@@ -48,12 +45,9 @@ std::unique_ptr<schema::Schema> getTPCHSchemaLight() {
             schema::Column("n_regionkey", schema::Type::Integer()),
             schema::Column("n_comment", schema::Type::Char(152)),
          },
-         {
-            "n_nationkey"
-         },
+         {"n_nationkey"},
          20, 21,
-         0
-         ),
+         0),
       schema::Table(
          "region",
          {
@@ -61,12 +55,9 @@ std::unique_ptr<schema::Schema> getTPCHSchemaLight() {
             schema::Column("r_name", schema::Type::Char(25)),
             schema::Column("r_comment", schema::Type::Char(152)),
          },
-         {
-            "r_regionkey"
-         },
+         {"r_regionkey"},
          30, 31,
-         0
-         ),
+         0),
    };
    auto schema = std::make_unique<schema::Schema>(std::move(tables));
    return schema;
@@ -104,7 +95,7 @@ void SlottedPages(benchmark::State& state) {
 
       // erase some random records
       std::shuffle(tids.begin(), tids.end(), std::default_random_engine(0));
-      for (size_t i = 0; i < workload_size; i++){
+      for (size_t i = 0; i < workload_size; i++) {
          sp_segment.erase(tids[i]);
       }
 
@@ -112,13 +103,12 @@ void SlottedPages(benchmark::State& state) {
 
       // allocate some bigger records
       for (size_t i = 0; i < workload_size / 2; ++i) {
-         tids.push_back(sp_segment.allocate(record_size*factor(engine)));
+         tids.push_back(sp_segment.allocate(record_size * factor(engine)));
       }
-
 
       // resize some random records
       std::shuffle(tids.begin(), tids.end(), std::default_random_engine(0));
-      for (size_t i = 0; i < workload_size; i++){
+      for (size_t i = 0; i < workload_size; i++) {
          sp_segment.resize(tids[i], record_size + size(engine));
       }
    }

@@ -1,14 +1,14 @@
+#include "simpledb/buffer_manager.h"
+#include "simpledb/file.h"
+#include "simpledb/segment.h"
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <exception>
-#include <utility>
 #include <random>
+#include <utility>
 #include <vector>
 #include <gtest/gtest.h>
-#include "simpledb/segment.h"
-#include "simpledb/file.h"
-#include "simpledb/buffer_manager.h"
 
 using SlottedPage = simpledb::SlottedPage;
 
@@ -41,8 +41,7 @@ TEST(SlottedPageTest, Allocation) {
    for (size_t i = 0; i < max_records; ++i) {
       size_t slot_id = page->allocate(record_size, page_size);
       size_t expected_data_start = page_size - (i + 1) * record_size;
-      size_t expected_free_space = page_size - (i + 1) * record_size
-         - (i + 1) * sizeof(SlottedPage::Slot) - sizeof(SlottedPage::Header);
+      size_t expected_free_space = page_size - (i + 1) * record_size - (i + 1) * sizeof(SlottedPage::Slot) - sizeof(SlottedPage::Header);
 
       ASSERT_EQ(page->header.slot_count, i + 1);
       ASSERT_EQ(page->header.first_free_slot, i + 1);
@@ -169,4 +168,4 @@ TEST(SlottedPageTest, RelocateWithCompactification) {
    EXPECT_EQ(page->header.free_space, 0);
 }
 
-}  // namespace
+}

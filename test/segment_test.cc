@@ -1,14 +1,14 @@
-#include <cstdint>
-#include <cstring>
-#include <exception>
-#include <utility>
-#include <random>
-#include <vector>
-#include <gtest/gtest.h>
 #include "simpledb/buffer_manager.h"
 #include "simpledb/file.h"
 #include "simpledb/hex_dump.h"
 #include "simpledb/segment.h"
+#include <cstdint>
+#include <cstring>
+#include <exception>
+#include <random>
+#include <utility>
+#include <vector>
+#include <gtest/gtest.h>
 
 using BufferManager = simpledb::BufferManager;
 using FSISegment = simpledb::FSISegment;
@@ -22,7 +22,7 @@ namespace schema = simpledb::schema;
 namespace {
 
 std::unique_ptr<schema::Schema> getTPCHSchemaLight() {
-   std::vector<schema::Table> tables {
+   std::vector<schema::Table> tables{
       schema::Table(
          "customer",
          {
@@ -35,12 +35,9 @@ std::unique_ptr<schema::Schema> getTPCHSchemaLight() {
             schema::Column("c_mktsegment", schema::Type::Char(10)),
             schema::Column("c_comment", schema::Type::Char(117)),
          },
-         {
-            "c_custkey"
-         },
+         {"c_custkey"},
          10, 11,
-         0
-         ),
+         0),
       schema::Table(
          "nation",
          {
@@ -49,12 +46,9 @@ std::unique_ptr<schema::Schema> getTPCHSchemaLight() {
             schema::Column("n_regionkey", schema::Type::Integer()),
             schema::Column("n_comment", schema::Type::Char(152)),
          },
-         {
-            "n_nationkey"
-         },
+         {"n_nationkey"},
          20, 21,
-         0
-         ),
+         0),
       schema::Table(
          "region",
          {
@@ -62,23 +56,19 @@ std::unique_ptr<schema::Schema> getTPCHSchemaLight() {
             schema::Column("r_name", schema::Type::Char(25)),
             schema::Column("r_comment", schema::Type::Char(152)),
          },
-         {
-            "r_regionkey"
-         },
+         {"r_regionkey"},
          30, 31,
-         0
-         ),
+         0),
    };
    auto schema = std::make_unique<schema::Schema>(std::move(tables));
    return schema;
 }
 
-struct SegmentTest: ::testing::Test {
+struct SegmentTest : ::testing::Test {
    protected:
-
    void SetUp() override {
       using simpledb::File;
-      for (const auto * segment_file: std::vector<const char*>{"0", "1", "10", "11", "20", "21", "30", "31"}) {
+      for (const auto* segment_file : std::vector<const char*>{"0", "1", "10", "11", "20", "21", "30", "31"}) {
          auto file = File::open_file(segment_file, File::Mode::WRITE);
          file->resize(0);
       }
@@ -119,7 +109,7 @@ TEST_F(SegmentTest, SchemaSerialiseTPCHLight) {
    SchemaSegment schema_segment_2(0, buffer_manager);
    schema_segment_2.read();
    ASSERT_NE(nullptr, schema_segment_2.get_schema());
-   auto * schema_2 = schema_segment_2.get_schema();
+   auto* schema_2 = schema_segment_2.get_schema();
    ASSERT_EQ(schema_2->tables.size(), 3);
    EXPECT_EQ(schema_2->tables[0].id, "customer");
    ASSERT_EQ(schema_2->tables[0].primary_key.size(), 1);
@@ -185,12 +175,10 @@ TEST_F(SegmentTest, FSIEncoding) {
          schema::Column("n_regionkey", schema::Type::Integer()),
          schema::Column("n_comment", schema::Type::Char(152)),
       },
-      {
-         "n_nationkey"
-      },
-      20, 21,
-      0
-   };
+      {"n_nationkey"},
+      20,
+      21,
+      0};
    FSISegment fsi_segment(1, buffer_manager, table);
    for (int i = 0; i < 1024; ++i) {
       auto encoded = fsi_segment.encode_free_space(i);
@@ -211,7 +199,7 @@ TEST_F(SegmentTest, FSIFind) {
    auto record_size = sizeof(uint64_t);
    auto tid0 = sp_segment.allocate(record_size);
 
-   auto page = fsi_segment.find(record_size);  // NOLINT
+   auto page = fsi_segment.find(record_size); // NOLINT
    ASSERT_TRUE(page);
    ASSERT_EQ(*page, tid0.get_page_id(0));
 }
@@ -425,7 +413,7 @@ TEST_F(SegmentTest, SPFuzzing) {
       std::vector<char> buffer(rand_size, rand_content);
 
       simpledb::TID tid = sp_segment.allocate(rand_size);
-      sp_segment.write(tid, reinterpret_cast<std::byte *>(buffer.data()), buffer.size());
+      sp_segment.write(tid, reinterpret_cast<std::byte*>(buffer.data()), buffer.size());
 
       lengths.push_back(rand_size);
       tids.push_back(tid);
@@ -528,4 +516,4 @@ TEST_F(SegmentTest, SPFuzzing) {
    }
 }
 
-}  // namespace
+} // namespace
