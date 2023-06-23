@@ -146,7 +146,11 @@ void SPSegment::resize(TID tid, uint32_t new_length) {
 
    assert(!slot.is_redirect_target());
 
-   if (slot.get_size() == new_length) return;
+   if (slot.get_size() == new_length) {
+      // slot already has the right size
+      buffer_manager.unfix_page(bf, false);
+      return;
+   }
 
    if (!slot.is_redirect()) {
       if (new_length < slot.get_size() || page->get_free_space() >= new_length - slot.get_size()) {

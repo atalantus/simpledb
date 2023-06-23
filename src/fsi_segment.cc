@@ -95,6 +95,7 @@ void FSISegment::update_free_cache(uint64_t pageIndex, uint8_t freeSpace) {
          uint64_t fsiIndex = curPageIndex / (buffer_manager.get_page_size() * 2);
          uint64_t fsiOffset = curPageIndex % (buffer_manager.get_page_size() * 2);
          auto& bf = buffer_manager.fix_page((static_cast<uint64_t>(segment_id) << 48) ^ fsiIndex, false);
+         bool found = false;
 
          // scan over bitmap page
          while (fsiOffset < buffer_manager.get_page_size() * 2) {
@@ -104,7 +105,8 @@ void FSISegment::update_free_cache(uint64_t pageIndex, uint8_t freeSpace) {
                if (upper == prevFreeSpace) {
                   // found
                   free_cache[prevFreeSpace] = curPageIndex;
-                  return;
+                  found = true;
+                  break;
                }
                curPageIndex++;
                if (curPageIndex == table.allocated_pages) break;
@@ -114,13 +116,20 @@ void FSISegment::update_free_cache(uint64_t pageIndex, uint8_t freeSpace) {
                if (lower == prevFreeSpace) {
                   // found
                   free_cache[prevFreeSpace] = curPageIndex;
-                  return;
+                  found = true;
+                  break;
                }
                curPageIndex++;
                if (curPageIndex == table.allocated_pages) break;
             }
 
             fsiOffset++;
+         }
+
+         buffer_manager.unfix_page(bf, false);
+
+         if (found) {
+            return;
          }
       }
 

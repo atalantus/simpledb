@@ -1,0 +1,25 @@
+name: Update Benchmark Results
+
+on:
+  workflow_run:
+    workflows: ["Main CI"]
+    types:
+      - completed
+
+jobs:
+  update_bench_results:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download benchmark results
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: main.yml
+          workflow_conclusion: success
+          commit: ${{ github.sha }}
+          name: bench_results
+          path: ${{github.workspace}}
+      - name: Read benchmark results
+        run: |
+          ls
+          cat benchmark_results.json
