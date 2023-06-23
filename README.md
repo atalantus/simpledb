@@ -1,4 +1,4 @@
-# simpledb
+# simpledb – [![Main CI](https://github.com/atalantus/simpledb/actions/workflows/main.yml/badge.svg)](https://github.com/atalantus/simpledb/actions/workflows/main.yml)
 
 ## Features
 
