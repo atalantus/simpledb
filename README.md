@@ -9,5 +9,6 @@
 
 ## TODOs
 - multithreaded slotted page/segments
+- multithreaded segments test/benchmark
 - refactor page size usages
 - optimize (btree, latches)

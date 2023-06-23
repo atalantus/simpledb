@@ -7,7 +7,7 @@
 
 namespace {
 
-void BufferManager_Multi(benchmark::State& state) {
+void BufferManager(benchmark::State& state) {
    for (auto _ : state) {
       simpledb::BufferManager buffer_manager{1024, 10};
       std::vector<std::thread> threads;
@@ -44,4 +44,4 @@ void BufferManager_Multi(benchmark::State& state) {
 }
 } // namespace
 
-BENCHMARK(BufferManager_Multi)->UseRealTime()->MinTime(30);
+BENCHMARK(BufferManager)->UseRealTime()->MinTime(30);
